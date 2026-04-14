@@ -115,24 +115,45 @@ const SFX = {
   wave:   ()=>{ playTone(220,'sawtooth',.1,.15); playTone(330,'sawtooth',.12,.12); playTone(440,'sawtooth',.15,.1); },
 };
 
-// ── CUSTOM BGM ───────────────────────────────
+// ── Playlist Logic ───────────────────────────
+const playlist = [
+  'music1.mp3',
+  'music2.mp3',
+  'track_electro.mp3'
+];
+let currentTrackIndex = 0;
 let bgmPlaying = false;
+const bgAudio = document.getElementById('bgMusic');
 
-function startBGM(){
-  const bgAudio = document.getElementById('bgMusic');
-  if(bgmPlaying || !bgAudio) return;
+function startBGM() {
+  if (bgmPlaying || !bgAudio) return;
   
-  bgmPlaying = true;
-  bgAudio.volume = 0.4; 
-  bgAudio.muted = muted;
-  bgAudio.play().catch(e => console.log("Waiting for user interaction"));
+  // Выбираем случайный трек для разнообразия
+  currentTrackIndex = Math.floor(Math.random() * playlist.length);
+  playCurrentTrack();
 }
 
-function stopBGM(){
-  bgmPlaying = false;
-  const bgAudio = document.getElementById('bgMusic');
-  if(bgAudio) bgAudio.pause();
+function playCurrentTrack() {
+  bgAudio.src = playlist[currentTrackIndex];
+  bgAudio.volume = 0.4;
+  bgAudio.muted = muted;
+  
+  bgAudio.play()
+    .then(() => { bgmPlaying = true; })
+    .catch(e => console.log("Музыка ждет клика"));
 }
+
+// Автопереключение: когда трек закончился, запускаем следующий
+bgAudio.onended = () => {
+  currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+  playCurrentTrack();
+};
+
+function stopBGM() {
+  bgmPlaying = false;
+  if (bgAudio) bgAudio.pause();
+              }
+    
 
 // mute toggle
 document.getElementById('muteBtn').addEventListener('click',()=>{
